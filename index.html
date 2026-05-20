@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MifugoHubTrack – E-Extension & E-Marketing Training System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── STEP 1: Replace the URL below with your deployed Apps Script URL ── */
+:root {
+  --api: "PASTE_YOUR_APPS_SCRIPT_URL_HERE";
+  --green:#1a7a4a;--green-light:#e8f5ee;--green-mid:#2d9a61;--green-dark:#0f5233;
+  --blue:#1a5276;--blue-light:#e8f0f8;--blue-mid:#2471a3;
+  --amber:#b7770d;--amber-light:#fef9ec;
+  --red:#a93226;--red-light:#fdf0ef;
+  --gray-50:#f8f9fa;--gray-100:#f1f3f5;--gray-200:#e9ecef;
+  --gray-300:#dee2e6;--gray-400:#ced4da;--gray-500:#adb5bd;
+  --gray-600:#6c757d;--gray-700:#495057;--gray-800:#343a40;--gray-900:#212529;
+  --white:#fff;--sidebar-w:240px;--topbar-h:60px;
+  --radius:10px;--radius-sm:6px;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.1);
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--gray-50);color:var(--gray-800);font-size:14px;line-height:1.5;min-height:100vh;display:flex}
+
+/* SIDEBAR */
+#sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--green-dark);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:100;transition:transform .25s ease}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:36px;height:36px;background:var(--green-mid);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-text strong{display:block;font-size:14px;font-weight:600;color:#fff;letter-spacing:-.01em}
+.logo-text span{font-size:11px;color:rgba(255,255,255,.5);font-weight:300}
+.sidebar-section{padding:12px 10px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.35);font-weight:500}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;border-radius:var(--radius-sm);color:rgba(255,255,255,.65);cursor:pointer;font-size:13px;font-weight:400;transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;font-family:var(--font)}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.15);color:#fff;font-weight:500}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.8}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,.1);font-size:11.5px;color:rgba(255,255,255,.4)}
+.sidebar-footer strong{display:block;color:rgba(255,255,255,.65);font-size:13px}
+
+/* SYNC STATUS */
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#adb5bd;display:inline-block;margin-right:5px;transition:background .3s}
+.sync-dot.ok{background:#1D9E75}
+.sync-dot.busy{background:#EF9F27;animation:pulse .8s infinite}
+.sync-dot.err{background:#a93226}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* MAIN */
+#main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+#topbar{height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--gray-200);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:15px;font-weight:600;flex:1;color:var(--gray-900)}
+.topbar-title span{font-size:12.5px;font-weight:400;color:var(--gray-500);margin-left:8px}
+#topbar-search{width:200px;padding:7px 12px 7px 32px;border:1px solid var(--gray-300);border-radius:20px;font-size:13px;font-family:var(--font);background:var(--gray-50) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' fill='none' stroke='%236c757d' stroke-width='2' viewBox='0 0 24 24'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;color:var(--gray-800)}
+#topbar-search:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,74,.1)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 15px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:var(--font);transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--green);color:#fff}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-primary:disabled{background:var(--gray-400);cursor:not-allowed}
+.btn-secondary{background:var(--white);color:var(--gray-700);border:1px solid var(--gray-300)}
+.btn-secondary:hover{background:var(--gray-50)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #f5c6c3}
+.btn-danger:hover{background:#fad9d7}
+.btn svg{width:13px;height:13px}
+
+/* CONTENT */
+#content{padding:24px;flex:1}
+.page{display:none}
+.page.active{display:block}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat-card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px 18px;display:flex;align-items:flex-start;gap:12px}
+.stat-icon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stat-icon svg{width:18px;height:18px}
+.stat-icon.green{background:var(--green-light);color:var(--green)}
+.stat-icon.blue{background:var(--blue-light);color:var(--blue-mid)}
+.stat-icon.amber{background:var(--amber-light);color:var(--amber)}
+.stat-icon.red{background:var(--red-light);color:var(--red)}
+.stat-value{font-size:24px;font-weight:600;line-height:1.1;color:var(--gray-900)}
+.stat-label{font-size:12px;color:var(--gray-500);margin-top:2px}
+.stat-delta{font-size:11.5px;margin-top:4px;font-weight:500;color:var(--green)}
+
+/* CARD */
+.card{background:var(--white);border:1px solid var(--gray-200);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--gray-100)}
+.card-title{font-size:13.5px;font-weight:600;color:var(--gray-900);display:flex;align-items:center;gap:8px}
+.card-title svg{width:15px;height:15px;color:var(--gray-500)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;padding:9px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);background:var(--gray-50);border-bottom:1px solid var(--gray-200);white-space:nowrap}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--gray-100);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--gray-50)}
+.td-name{font-weight:500;color:var(--gray-900)}
+.td-sub{font-size:11.5px;color:var(--gray-500);margin-top:1px}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.badge-completed{background:var(--green-light);color:var(--green-dark)}
+.badge-progress{background:var(--blue-light);color:var(--blue)}
+.badge-notstarted{background:var(--gray-100);color:var(--gray-600)}
+.badge-dropped{background:var(--red-light);color:var(--red)}
+.badge-ext{background:var(--green-light);color:var(--green-dark)}
+.badge-mkt{background:#ede8fe;color:#4a2b8a}
+.badge-both{background:var(--amber-light);color:var(--amber)}
+
+/* PROGRESS */
+.prog-wrap{display:flex;align-items:center;gap:8px}
+.prog-bar{flex:1;height:6px;background:var(--gray-200);border-radius:3px;overflow:hidden;min-width:50px}
+.prog-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
+.prog-fill.partial{background:var(--blue-mid)}
+.prog-pct{font-size:11.5px;color:var(--gray-600);min-width:28px;text-align:right}
+
+/* FORM */
+.form-section-title{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--green-light)}
+.form-row{display:grid;gap:12px;margin-bottom:12px}
+.form-row.c2{grid-template-columns:1fr 1fr}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr}
+.form-row.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:500;color:var(--gray-700)}
+.fg label .req{color:var(--red);margin-left:1px}
+.fg input,.fg select,.fg textarea{padding:8px 10px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);transition:border-color .15s,box-shadow .15s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,74,.1)}
+.fg textarea{resize:vertical;min-height:70px;line-height:1.5}
+
+/* MODULE CHECK */
+.module-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.mc{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--gray-200);border-radius:var(--radius-sm);cursor:pointer;transition:border-color .15s,background .15s}
+.mc:hover{border-color:var(--green);background:var(--green-light)}
+.mc input{accent-color:var(--green);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+.mc-name{font-size:12.5px;flex:1;line-height:1.3}
+.mc-tag{font-size:10px;padding:1px 6px;border-radius:10px;flex-shrink:0}
+
+/* CHARTS */
+.bar-chart{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{font-size:12px;color:var(--gray-600);min-width:120px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:9px;background:var(--gray-100);border-radius:5px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .4s ease}
+.bar-val{font-size:12px;color:var(--gray-600);min-width:22px;text-align:right}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{display:flex;flex-direction:column;gap:7px}
+.legend-item{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--gray-700)}
+.legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-start;justify-content:center;padding:36px 20px;overflow-y:auto}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:12px;width:100%;max-width:660px;box-shadow:var(--shadow-md);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--gray-200)}
+.modal-header h3{font-size:15px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:none;background:var(--gray-100);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:17px;transition:background .15s}
+.modal-close:hover{background:var(--gray-200)}
+.modal-body{padding:20px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid var(--gray-100)}
+
+/* ALERT */
+.alert{padding:10px 13px;border-radius:var(--radius-sm);font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:7px}
+.alert-info{background:var(--blue-light);color:var(--blue);border-left:3px solid var(--blue-mid)}
+.alert-warn{background:var(--amber-light);color:var(--amber);border-left:3px solid #e0a800}
+.alert svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+
+/* SETUP SCREEN */
+#setup-screen{position:fixed;inset:0;background:var(--green-dark);z-index:999;display:flex;align-items:center;justify-content:center}
+.setup-card{background:#fff;border-radius:16px;padding:36px 40px;max-width:520px;width:100%;box-shadow:var(--shadow-md)}
+.setup-card h2{font-size:20px;font-weight:700;color:var(--gray-900);margin-bottom:6px}
+.setup-card p{font-size:13.5px;color:var(--gray-600);line-height:1.6;margin-bottom:20px}
+.setup-steps{counter-reset:step;display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.setup-step{display:flex;align-items:flex-start;gap:12px;font-size:13px;color:var(--gray-700);line-height:1.5}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.setup-input-wrap{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.setup-input-wrap label{font-size:12.5px;font-weight:600;color:var(--gray-700)}
+.setup-input-wrap input{padding:10px 12px;border:1.5px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13.5px;font-family:var(--font);color:var(--gray-800)}
+.setup-input-wrap input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(26,122,74,.1)}
+.setup-input-wrap small{font-size:11.5px;color:var(--gray-500)}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:10px;padding:20px;color:var(--gray-500);font-size:13px}
+.spinner{width:18px;height:18px;border:2px solid var(--gray-200);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* REPORT KPI */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.kpi{background:var(--green-light);border-radius:var(--radius);padding:14px;text-align:center}
+.kpi-val{font-size:26px;font-weight:700;color:var(--green-dark);line-height:1}
+.kpi-label{font-size:11.5px;color:var(--green);margin-top:3px}
+
+/* SETTINGS */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-100)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13.5px;font-weight:500}
+.settings-desc{font-size:12px;color:var(--gray-500);margin-top:2px}
+
+/* MISC */
+.empty-state{text-align:center;padding:36px 20px;color:var(--gray-500)}
+.empty-state p{font-size:13px}
+.inline-actions{display:flex;gap:5px;align-items:center}
+.icon-btn{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:14px;transition:background .15s}
+.icon-btn-edit{background:var(--blue-light);color:var(--blue-mid)}
+.icon-btn-edit:hover{background:#ccdff0}
+.icon-btn-del{background:var(--red-light);color:var(--red)}
+.icon-btn-del:hover{background:#fad9d7}
+.icon-btn-view{background:var(--green-light);color:var(--green)}
+.icon-btn-view:hover{background:#c6e8d5}
+.tag{font-family:var(--mono);font-size:11px;background:var(--gray-100);color:var(--gray-700);padding:2px 6px;border-radius:4px}
+.page-header{margin-bottom:20px}
+.page-header h1{font-size:21px;font-weight:700;color:var(--gray-900)}
+.page-header p{font-size:13px;color:var(--gray-500);margin-top:3px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--gray-900);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;box-shadow:var(--shadow-md);transform:translateY(70px);opacity:0;transition:transform .25s ease,opacity .25s ease;display:flex;align-items:center;gap:7px}
+.toast.show{transform:none;opacity:1}
+.toast.success{background:var(--green-dark)}
+.toast.error{background:var(--red)}
+
+/* PROFILE GRID */
+.profile-detail-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+.detail-item{padding:11px 13px;border-bottom:1px solid var(--gray-100)}
+.detail-label{font-size:10.5px;color:var(--gray-500);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.detail-val{font-size:13px;color:var(--gray-800);font-weight:500}
+
+@media(max-width:900px){
+  #sidebar{transform:translateX(-100%)}
+  #sidebar.open{transform:none}
+  #main{margin-left:0}
+  .stats-row,.kpi-row{grid-template-columns:1fr 1fr}
+  .grid-2,.form-row.c3,.form-row.c4{grid-template-columns:1fr 1fr}
+  .module-grid{grid-template-columns:1fr}
+  .profile-detail-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:580px){
+  .stats-row{grid-template-columns:1fr}
+  .form-row.c2{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SETUP SCREEN ── -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <h2>🐄 MifugoHubTrack Setup</h2>
+    <p>Connect this system to your Google Sheet database. You only need to do this once.</p>
+    <div class="setup-steps">
+      <div class="setup-step"><div class="step-num">1</div><span>Open <strong>Google Sheets</strong>, create a new blank spreadsheet, and name it <em>MifugoHubTrack Database</em></span></div>
+      <div class="setup-step"><div class="step-num">2</div><span>Click <strong>Extensions → Apps Script</strong>. Delete any existing code, paste the full contents of <code>Code.gs</code>, then click Save.</span></div>
+      <div class="setup-step"><div class="step-num">3</div><span>In Apps Script, click <strong>Run → setupSheets</strong> to create all database sheets. Authorise when prompted.</span></div>
+      <div class="setup-step"><div class="step-num">4</div><span>Click <strong>Deploy → New deployment → Web app</strong>. Set <em>Execute as: Me</em> and <em>Who has access: Anyone</em>. Click Deploy and copy the URL.</span></div>
+      <div class="setup-step"><div class="step-num">5</div><span>Paste that URL below and click Connect.</span></div>
+    </div>
+    <div class="setup-input-wrap">
+      <label>Your Apps Script Web App URL</label>
+      <input type="url" id="setup-url" placeholder="https://script.google.com/macros/s/AKfy.../exec">
+      <small>This URL connects the app to your Google Sheet. It stays in your browser only.</small>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:11px" onclick="connectAPI()">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15" height="15"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      Connect to Google Sheets
+    </button>
+    <div id="setup-error" style="margin-top:10px;font-size:12.5px;color:var(--red);display:none"></div>
+  </div>
+</div>
+
+<!-- ── SIDEBAR ── -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">🐄</div>
+      <div class="logo-text"><strong>MifugoHubTrack</strong><span id="county-label">County Training System</span></div>
+    </div>
+  </div>
+  <div class="sidebar-section">Main</div>
+  <button class="nav-item active" onclick="nav('dashboard',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</button>
+  <button class="nav-item" onclick="nav('beneficiaries',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Beneficiaries</button>
+  <button class="nav-item" onclick="nav('register',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Register Beneficiary</button>
+  <button class="nav-item" onclick="nav('progress',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Progress Tracker</button>
+  <button class="nav-item" onclick="nav('sessions',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Training Sessions</button>
+  <div class="sidebar-section">Analytics</div>
+  <button class="nav-item" onclick="nav('reports',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Reports</button>
+  <button class="nav-item" onclick="nav('modules',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Training Modules</button>
+  <div class="sidebar-section">System</div>
+  <button class="nav-item" onclick="nav('trainers',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Trainers</button>
+  <button class="nav-item" onclick="nav('settings',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings</button>
+  <div class="sidebar-footer">
+    <strong id="sidebar-trainer">Training Portal</strong>
+    <span><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting…</span></span>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div id="main">
+  <header id="topbar">
+    <button id="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open')" style="display:none;border:none;background:none;cursor:pointer;padding:4px;color:var(--gray-700)"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    <div class="topbar-title" id="topbar-title">Dashboard <span>Overview</span></div>
+    <input type="search" id="topbar-search" placeholder="Search beneficiaries…" oninput="globalSearch(this.value)">
+    <button class="btn btn-secondary btn-sm" onclick="exportCSV()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export CSV</button>
+    <button class="btn btn-primary btn-sm" onclick="nav('register',document.querySelector('[onclick*=register]'))"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Beneficiary</button>
+  </header>
+
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header"><h1>Dashboard</h1><p>Live overview of training progress across all counties</p></div>
+      <div class="stats-row" id="dash-stats"><div class="loading"><div class="spinner"></div>Loading dashboard…</div></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Completion by sub-county</div></div><div class="bar-chart" id="subcounty-bars"><div class="loading"><div class="spinner"></div>Loading…</div></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Training status</div></div><div class="donut-wrap"><canvas id="donut-canvas" width="150" height="150"></canvas><div class="donut-legend" id="donut-legend"></div></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Platform enrolment</div></div><div class="bar-chart" id="platform-bars"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Recently registered</div><button class="btn btn-secondary btn-sm" onclick="nav('beneficiaries',document.querySelectorAll('.nav-item')[1])">View all</button></div><div id="recent-list"><div class="loading"><div class="spinner"></div>Loading…</div></div></div>
+      </div>
+    </div>
+
+    <!-- BENEFICIARIES -->
+    <div id="page-beneficiaries" class="page">
+      <div class="page-header"><h1>Beneficiaries</h1><p>All registered training participants</p></div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap">
+          <input type="search" id="ben-search" placeholder="Search name, ID, phone…" style="flex:1;min-width:140px;padding:7px 10px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" oninput="renderBenTable()">
+          <select id="bf-platform" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" onchange="renderBenTable()"><option value="">All platforms</option><option>e-Extension</option><option>e-Marketing</option><option>Both</option></select>
+          <select id="bf-status" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" onchange="renderBenTable()"><option value="">All statuses</option><option>Not started</option><option>In progress</option><option>Completed</option><option>Dropped</option></select>
+          <select id="bf-subcounty" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" onchange="renderBenTable()"><option value="">All sub-counties</option></select>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Location</th><th>Platform</th><th>Cohort</th><th>Trainer</th><th>Progress</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ben-tbody"></tbody></table></div>
+        <div style="padding:9px 16px;font-size:12px;color:var(--gray-500)" id="ben-count"></div>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="page-register" class="page">
+      <div class="page-header"><h1>Register Beneficiary</h1><p>Enrol a new participant into the training programme</p></div>
+      <form id="reg-form" onsubmit="submitRegister(event)">
+        <div class="card">
+          <div class="form-section-title">Personal information</div>
+          <div class="form-row c3">
+            <div class="fg"><label>Full name <span class="req">*</span></label><input id="r-name" type="text" placeholder="e.g. Grace Wambui Njoroge" required></div>
+            <div class="fg"><label>National ID / farmer ID</label><input id="r-natid" type="text" placeholder="e.g. 12345678"></div>
+            <div class="fg"><label>Phone <span class="req">*</span></label><input id="r-phone" type="tel" placeholder="e.g. 0712345678" required></div>
+          </div>
+          <div class="form-row c4">
+            <div class="fg"><label>Gender</label><select id="r-gender"><option value="">Select</option><option>Female</option><option>Male</option><option>Other</option></select></div>
+            <div class="fg"><label>Age group</label><select id="r-age"><option value="">Select</option><option>18–25</option><option>26–35</option><option>36–45</option><option>46–55</option><option>56+</option></select></div>
+            <div class="fg"><label>Education</label><select id="r-edu"><option value="">Select</option><option>No formal education</option><option>Primary</option><option>Secondary</option><option>Certificate</option><option>Diploma</option><option>Degree+</option></select></div>
+            <div class="fg"><label>Disability</label><select id="r-disability"><option value="">None</option><option>Visual impairment</option><option>Hearing impairment</option><option>Physical disability</option><option>Other</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="form-section-title">Location</div>
+          <div class="form-row c3">
+            <div class="fg"><label>County <span class="req">*</span></label><input id="r-county" type="text" placeholder="e.g. Nakuru" required></div>
+            <div class="fg"><label>Sub-county <span class="req">*</span></label><input id="r-subcounty" type="text" placeholder="e.g. Nakuru North" required></div>
+            <div class="fg"><label>Ward</label><input id="r-ward" type="text" placeholder="e.g. Lanet/Umoja"></div>
+            <div class="fg"><label>Village</label><input id="r-village" type="text" placeholder="e.g. Kiamunyi"></div>
+            <div class="fg"><label>GPS coordinates</label><input id="r-gps" type="text" placeholder="e.g. -0.303, 36.080"></div>
+            <div class="fg"><label>Farmer group / cooperative</label><input id="r-group" type="text" placeholder="e.g. Meru Apiculture Farmers"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="form-section-title">Agricultural profile</div>
+          <div class="form-row c4">
+            <div class="fg"><label>Primary enterprise <span class="req">*</span></label><select id="r-enterprise" required><option value="">Select</option><option>Apiculture</option><option>Poultry</option><option>Goat for Meat</option><option>Goat for Milk</option><option>Sheep</option><option>Other</option></select></div>
+            <div class="fg"><label>Farm size (acres)</label><input id="r-farmsize" type="number" step="0.1" min="0" placeholder="e.g. 2.5"></div>
+            <div class="fg"><label>Smartphone access</label><select id="r-smartphone"><option value="">Select</option><option>Owns smartphone</option><option>Shared smartphone</option><option>Feature phone</option><option>No phone</option></select></div>
+            <div class="fg"><label>Internet access</label><select id="r-internet"><option value="">Select</option><option>Regular</option><option>Occasional</option><option>None</option></select></div>
+          </div>
+          <div class="form-row c2">
+            <div class="fg"><label>Value chain</label><select id="r-valuechain"><option value="">Select</option><option>Apiculture</option><option>Poultry</option><option>Goat for Meat</option><option>Goat for Milk</option><option>Sheep</option><option>None yet</option></select></div>
+            <div class="fg"><label>Previous digital training</label><select id="r-prevtraining"><option value="">Select</option><option>None</option><option>Basic smartphone use</option><option>M-PESA / mobile money</option><option>Kilimo Salama / M-Farm</option><option>Other platform</option></select></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="form-section-title">Training enrolment</div>
+          <div class="form-row c3">
+            <div class="fg"><label>Platform <span class="req">*</span></label><select id="r-platform" required onchange="updateModuleList()"><option value="">Select</option><option>e-Extension</option><option>e-Marketing</option><option>Both</option></select></div>
+            <div class="fg"><label>Cohort <span class="req">*</span></label><input id="r-cohort" type="text" placeholder="e.g. Batch 4 – June 2026" required></div>
+            <div class="fg"><label>Start date <span class="req">*</span></label><input id="r-date" type="date" required></div>
+            <div class="fg"><label>Trainer <span class="req">*</span></label><input id="r-trainer" type="text" placeholder="Trainer name" required list="trainer-datalist"><datalist id="trainer-datalist"></datalist></div>
+            <div class="fg"><label>Venue</label><input id="r-venue" type="text" placeholder="e.g. Nakuru ATC"></div>
+            <div class="fg"><label>Skill level</label><select id="r-skill"><option value="">Select</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+          </div>
+          <div class="form-row c2">
+            <div class="fg"><label>Modules to cover</label><div class="module-grid" id="module-checklist" style="margin-top:5px"></div></div>
+            <div class="fg"><label>Remarks / notes</label><textarea id="r-remarks" placeholder="Special needs, support required, champion potential…"></textarea></div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:28px">
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('reg-form').reset();updateModuleList()">Clear</button>
+          <button type="submit" class="btn btn-primary" id="reg-submit-btn"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Register beneficiary</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- PROGRESS TRACKER -->
+    <div id="page-progress" class="page">
+      <div class="page-header"><h1>Progress Tracker</h1><p>Update module-by-module completion for each beneficiary</p></div>
+      <div class="alert alert-info"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Click the edit button to update a beneficiary's module completion and status. Changes save directly to Google Sheets.</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:12px 16px;display:flex;gap:10px;border-bottom:1px solid var(--gray-100);flex-wrap:wrap">
+          <input type="search" id="prog-search" placeholder="Search…" style="flex:1;min-width:130px;padding:7px 10px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" oninput="renderProgTable()">
+          <select id="pf-trainer" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" onchange="renderProgTable()"><option value="">All trainers</option></select>
+          <select id="pf-cohort" style="padding:7px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)" onchange="renderProgTable()"><option value="">All cohorts</option></select>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Beneficiary</th><th>Platform</th><th>Modules done</th><th>Progress</th><th>Status</th><th>Last updated</th><th>Actions</th></tr></thead><tbody id="prog-tbody"></tbody></table></div>
+        <div style="padding:9px 16px;font-size:12px;color:var(--gray-500)" id="prog-count"></div>
+      </div>
+    </div>
+
+    <!-- SESSIONS -->
+    <div id="page-sessions" class="page">
+      <div class="page-header"><h1>Training Sessions</h1><p>Log all training sessions conducted by county trainers</p></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary" onclick="openModal('modal-session')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log session</button></div>
+      <div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table><thead><tr><th>Date</th><th>Venue</th><th>Trainer</th><th>Platform</th><th>Attendees</th><th>Sub-county</th><th>Cohort</th><th>Notes</th></tr></thead><tbody id="sessions-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div id="page-reports" class="page">
+      <div class="page-header"><h1>Reports & Analytics</h1><p>Programme performance for county coordination and national reporting</p></div>
+      <div class="kpi-row" id="report-kpis"></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Gender breakdown</div></div><div class="bar-chart" id="gender-bars"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Age distribution</div></div><div class="bar-chart" id="age-bars"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Enterprise distribution</div></div><div class="bar-chart" id="enterprise-bars"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Trainer performance</div></div><div class="bar-chart" id="trainer-perf-bars"></div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Full programme data</div><button class="btn btn-secondary btn-sm" onclick="exportCSV()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download CSV</button></div>
+        <div class="table-wrap"><table><thead><tr><th>ID</th><th>Name</th><th>Sub-county</th><th>Platform</th><th>Status</th><th>Progress</th><th>Trainer</th><th>Enrolled</th></tr></thead><tbody id="report-tbody"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- MODULES -->
+    <div id="page-modules" class="page">
+      <div class="page-header"><h1>Training Modules</h1><p>Standard curriculum for e-Extension and e-Marketing platform training</p></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title" style="color:var(--green)">e-Extension modules</div><span class="badge badge-ext">5 modules · ~5.5 hrs</span></div><div id="ext-mod-list"></div></div>
+        <div class="card"><div class="card-header"><div class="card-title" style="color:#4a2b8a">e-Marketing modules</div><span class="badge badge-mkt">5 modules · ~6 hrs</span></div><div id="mkt-mod-list"></div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Competency assessment framework</div></div>
+        <table><thead><tr><th>Status</th><th>Criteria</th><th>Evidence required</th><th>Trainer action</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-notstarted">Not started</span></td><td>Enrolled, no modules attended</td><td>Attendance register</td><td>Send reminder, reschedule session</td></tr>
+          <tr><td><span class="badge badge-progress">In progress</span></td><td>1+ modules completed, still active</td><td>Module sign-off sheet</td><td>Monitor attendance, provide support</td></tr>
+          <tr><td><span class="badge badge-completed">Completed</span></td><td>All modules done + practical demo</td><td>Assessment score ≥60%</td><td>Issue certificate, link to network</td></tr>
+          <tr><td><span class="badge badge-dropped">Dropped</span></td><td>Missed 3+ consecutive sessions</td><td>Follow-up call log</td><td>Document reason, re-enrol next cohort</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- TRAINERS -->
+    <div id="page-trainers" class="page">
+      <div class="page-header"><h1>Trainers</h1><p>County-level trainers registered on this system</p></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button class="btn btn-primary" onclick="openModal('modal-trainer')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add trainer</button></div>
+      <div class="card" style="padding:0;overflow:hidden"><div class="table-wrap"><table><thead><tr><th>Name</th><th>County</th><th>Sub-county</th><th>Phone</th><th>Beneficiaries</th><th>Completion rate</th><th>Actions</th></tr></thead><tbody id="trainers-tbody"></tbody></table></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="page-settings" class="page">
+      <div class="page-header"><h1>Settings</h1><p>System configuration and data management</p></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">System preferences</div></div>
+          <div class="settings-row"><div><div class="settings-label">County name</div><div class="settings-desc">Used in reports and exports</div></div><input type="text" id="s-county" style="width:150px;padding:6px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)"></div>
+          <div class="settings-row"><div><div class="settings-label">Programme name</div><div class="settings-desc">e.g. KELCOP</div></div><input type="text" id="s-programme" style="width:150px;padding:6px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)"></div>
+          <div class="settings-row"><div><div class="settings-label">Reporting cycle</div></div><select id="s-cycle" style="width:150px;padding:6px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)"><option>Monthly</option><option>Quarterly</option><option>Annual</option></select></div>
+          <div class="settings-row"><div><div class="settings-label">Your name (trainer)</div></div><input type="text" id="s-trainer-name" style="width:150px;padding:6px 9px;border:1px solid var(--gray-300);border-radius:var(--radius-sm);font-size:13px;font-family:var(--font)"></div>
+          <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn btn-primary btn-sm" onclick="saveSettings()">Save settings</button></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Connection</div></div>
+          <div class="settings-row"><div><div class="settings-label">Google Sheets API URL</div><div class="settings-desc" id="api-url-display" style="word-break:break-all;color:var(--green);font-size:11px"></div></div><button class="btn btn-danger btn-sm" onclick="disconnectAPI()">Disconnect</button></div>
+          <div class="settings-row"><div><div class="settings-label">Export all data</div><div class="settings-desc">Download full database as CSV</div></div><button class="btn btn-secondary btn-sm" onclick="exportCSV()">Export CSV</button></div>
+          <div class="settings-row"><div><div class="settings-label">Refresh data</div><div class="settings-desc">Pull latest from Google Sheets</div></div><button class="btn btn-secondary btn-sm" onclick="refreshAll()">Refresh now</button></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">About MifugoHubTrack</div></div>
+        <table style="font-size:13px"><tr><td style="padding:8px 12px;color:var(--gray-500);width:200px">System</td><td style="padding:8px 12px">MifugoHubTrack – E-Extension & E-Marketing Training System</td></tr><tr><td style="padding:8px 12px;color:var(--gray-500)">Version</td><td style="padding:8px 12px"><span class="tag">v1.0 – Google Sheets Edition</span></td></tr><tr><td style="padding:8px 12px;color:var(--gray-500)">Backend</td><td style="padding:8px 12px">Google Apps Script + Google Sheets</td></tr><tr><td style="padding:8px 12px;color:var(--gray-500)">Multi-user</td><td style="padding:8px 12px">Yes — all trainers share one database</td></tr></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- Progress Modal -->
+<div class="modal-overlay" id="modal-progress">
+  <div class="modal"><div class="modal-header"><h3>Update training progress</h3><button class="modal-close" onclick="closeModal('modal-progress')">×</button></div>
+  <div class="modal-body">
+    <div id="prog-modal-name" style="font-weight:700;font-size:15px;margin-bottom:3px"></div>
+    <div id="prog-modal-sub" style="font-size:12px;color:var(--gray-500);margin-bottom:16px"></div>
+    <div id="prog-modal-modules" style="margin-bottom:16px"></div>
+    <div class="form-row c2">
+      <div class="fg"><label>Overall status</label><select id="pm-status"><option>Not started</option><option>In progress</option><option>Completed</option><option>Dropped</option></select></div>
+      <div class="fg"><label>Assessment score (%)</label><input type="number" id="pm-score" min="0" max="100" placeholder="e.g. 78"></div>
+    </div>
+    <div class="fg"><label>Trainer notes</label><textarea id="pm-notes" placeholder="Observations, challenges, next steps…"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-progress')">Cancel</button><button class="btn btn-primary" id="prog-save-btn" onclick="saveProgress()">Save to Google Sheets</button></div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay" id="modal-view">
+  <div class="modal" style="max-width:740px"><div class="modal-header"><h3 id="view-title">Beneficiary profile</h3><button class="modal-close" onclick="closeModal('modal-view')">×</button></div>
+  <div class="modal-body" id="view-body"></div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-view')">Close</button></div>
+  </div>
+</div>
+
+<!-- Session Modal -->
+<div class="modal-overlay" id="modal-session">
+  <div class="modal"><div class="modal-header"><h3>Log training session</h3><button class="modal-close" onclick="closeModal('modal-session')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row c2">
+      <div class="fg"><label>Date <span class="req">*</span></label><input type="date" id="ss-date"></div>
+      <div class="fg"><label>Venue</label><input type="text" id="ss-venue" placeholder="e.g. Nakuru ATC"></div>
+      <div class="fg"><label>Trainer <span class="req">*</span></label><input type="text" id="ss-trainer" placeholder="Trainer name" list="trainer-datalist2"><datalist id="trainer-datalist2"></datalist></div>
+      <div class="fg"><label>Platform</label><select id="ss-platform"><option value="">Select</option><option>e-Extension</option><option>e-Marketing</option><option>Both</option></select></div>
+      <div class="fg"><label>Sub-county</label><input type="text" id="ss-subcounty" placeholder="Sub-county"></div>
+      <div class="fg"><label>Cohort</label><input type="text" id="ss-cohort" placeholder="e.g. Batch 4"></div>
+    </div>
+    <div class="fg"><label>Number of attendees</label><input type="number" id="ss-attendees" min="0" placeholder="e.g. 25" style="margin-bottom:10px"></div>
+    <div class="fg"><label>Session notes</label><textarea id="ss-notes" placeholder="Topics covered, challenges, follow-up actions…"></textarea></div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-session')">Cancel</button><button class="btn btn-primary" onclick="saveSession()">Save to Google Sheets</button></div>
+  </div>
+</div>
+
+<!-- Trainer Modal -->
+<div class="modal-overlay" id="modal-trainer">
+  <div class="modal"><div class="modal-header"><h3>Add trainer</h3><button class="modal-close" onclick="closeModal('modal-trainer')">×</button></div>
+  <div class="modal-body">
+    <div class="form-row c2">
+      <div class="fg"><label>Full name <span class="req">*</span></label><input type="text" id="tt-name" placeholder="Trainer full name"></div>
+      <div class="fg"><label>Phone</label><input type="text" id="tt-phone" placeholder="e.g. 0712345678"></div>
+      <div class="fg"><label>County</label><input type="text" id="tt-county" placeholder="e.g. Nakuru"></div>
+      <div class="fg"><label>Sub-county</label><input type="text" id="tt-subcounty" placeholder="e.g. Nakuru North"></div>
+      <div class="fg"><label>Specialisation</label><select id="tt-spec"><option value="">Select</option><option>e-Extension</option><option>e-Marketing</option><option>Both</option></select></div>
+      <div class="fg"><label>Email</label><input type="email" id="tt-email" placeholder="trainer@county.go.ke"></div>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-trainer')">Cancel</button><button class="btn btn-primary" onclick="saveTrainer()">Add to Google Sheets</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════ DATA ═══════════════════════════════════ */
+const MODULES_EXT=[{id:'E1',name:'System registration & profile setup',dur:'1 hr'},{id:'E2',name:'Accessing extension advisories & alerts',dur:'1.5 hr'},{id:'E3',name:'Submitting farm queries & feedback',dur:'1 hr'},{id:'E4',name:'Pest, disease & weather notifications',dur:'1 hr'},{id:'E5',name:'Linking with officers & group features',dur:'1 hr'}];
+const MODULES_MKT=[{id:'M1',name:'Creating a seller/buyer profile',dur:'1 hr'},{id:'M2',name:'Listing produce — prices, quantities, photos',dur:'1.5 hr'},{id:'M3',name:'Receiving & responding to buyer inquiries',dur:'1 hr'},{id:'M4',name:'Mobile money & payment tracking',dur:'1.5 hr'},{id:'M5',name:'Checking market prices & demand trends',dur:'1 hr'}];
+function modsFor(p){if(p==='e-Extension')return MODULES_EXT;if(p==='e-Marketing')return MODULES_MKT;return[...MODULES_EXT,...MODULES_MKT];}
+
+let API_URL='';
+let benData=[], sessionData=[], trainerData=[], settingsData={};
+let editingId=null;
+
+/* ═══════════════════════════════════ API ═══════════════════════════════════ */
+function setSyncStatus(state){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  dot.className='sync-dot '+state;
+  lbl.textContent={ok:'Synced with Google Sheets',busy:'Saving…',err:'Connection error','':'Connecting…'}[state]||'';
+}
+
+async function apiGet(action){
+  setSyncStatus('busy');
+  try{
+    const res=await fetch(API_URL+'?action='+action,{method:'GET'});
+    const json=await res.json();
+    setSyncStatus(json.success?'ok':'err');
+    return json;
+  }catch(e){setSyncStatus('err');return{success:false,error:e.toString()};}
+}
+
+async function apiPost(action,payload){
+  setSyncStatus('busy');
+  try{
+    const res=await fetch(API_URL,{method:'POST',body:JSON.stringify({action,payload})});
+    const json=await res.json();
+    setSyncStatus(json.success?'ok':'err');
+    return json;
+  }catch(e){setSyncStatus('err');return{success:false,error:e.toString()};}
+}
+
+/* ═══════════════════════════════════ SETUP ═══════════════════════════════════ */
+async function connectAPI(){
+  const url=document.getElementById('setup-url').value.trim();
+  const errEl=document.getElementById('setup-error');
+  if(!url||!url.includes('script.google.com')){errEl.textContent='Please enter a valid Apps Script URL.';errEl.style.display='block';return;}
+  errEl.style.display='none';
+  API_URL=url;
+  const btn=document.querySelector('#setup-screen .btn');
+  btn.textContent='Connecting…';btn.disabled=true;
+  const test=await apiGet('getDashboard');
+  if(test.success){
+    localStorage.setItem('mifugohubtrack_api_url',url);
+    document.getElementById('setup-screen').style.display='none';
+    document.getElementById('api-url-display').textContent=url.slice(0,50)+'…';
+    await refreshAll();
+    showToast('Connected to Google Sheets successfully!','success');
+  }else{
+    errEl.textContent='Could not connect. Check your URL and make sure the script is deployed as a web app with "Anyone" access.';
+    errEl.style.display='block';
+    btn.textContent='Connect to Google Sheets';btn.disabled=false;
+    API_URL='';
+  }
+}
+
+function disconnectAPI(){
+  if(!confirm('Disconnect from Google Sheets? You will need to enter the URL again.'))return;
+  localStorage.removeItem('mifugohubtrack_api_url');
+  location.reload();
+}
+
+/* ═══════════════════════════════════ LOAD ALL ═══════════════════════════════════ */
+async function refreshAll(){
+  const [bRes,sRes,tRes,stRes]=await Promise.all([apiGet('getBeneficiaries'),apiGet('getSessions'),apiGet('getTrainers'),apiGet('getSettings')]);
+  if(bRes.success) benData=bRes.data||[];
+  if(sRes.success) sessionData=sRes.data||[];
+  if(tRes.success) trainerData=tRes.data||[];
+  if(stRes.success) settingsData=stRes.data||{};
+  updateTrainerDatalist();
+  renderDashboard();
+  populateBenFilters();
+  populateProgFilters();
+  renderModules();
+  loadSettingsForm();
+  if(settingsData.county) document.getElementById('county-label').textContent=settingsData.county+' County';
+  if(settingsData.trainerName) document.getElementById('sidebar-trainer').textContent=settingsData.trainerName;
+}
+
+/* ═══════════════════════════════════ NAV ═══════════════════════════════════ */
+const PAGE_TITLES={dashboard:'Dashboard',beneficiaries:'Beneficiaries',register:'Register Beneficiary',progress:'Progress Tracker',sessions:'Training Sessions',reports:'Reports & Analytics',modules:'Training Modules',trainers:'Trainers',settings:'Settings'};
+const PAGE_SUBS={dashboard:'Overview',beneficiaries:'All participants',register:'Enrol new participant',progress:'Update completion',sessions:'Session log',reports:'Analytics',modules:'Curriculum',trainers:'County team',settings:'Configuration'};
+
+function nav(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('topbar-title').innerHTML=PAGE_TITLES[name]+' <span>'+PAGE_SUBS[name]+'</span>';
+  if(name==='dashboard')renderDashboard();
+  if(name==='beneficiaries'){renderBenTable();populateBenFilters();}
+  if(name==='progress'){renderProgTable();populateProgFilters();}
+  if(name==='reports')renderReports();
+  if(name==='sessions')renderSessions();
+  if(name==='trainers')renderTrainers();
+  if(name==='settings')loadSettingsForm();
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+/* ═══════════════════════════════════ DASHBOARD ═══════════════════════════════════ */
+function renderDashboard(){
+  const total=benData.length,completed=benData.filter(r=>r.Status==='Completed').length,inprog=benData.filter(r=>r.Status==='In progress').length,female=benData.filter(r=>r.Gender==='Female').length,pct=total?Math.round(completed/total*100):0;
+  document.getElementById('dash-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-icon green"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="stat-value">${total}</div><div class="stat-label">Total beneficiaries</div><div class="stat-delta">${sessionData.length} sessions logged</div></div></div>
+    <div class="stat-card"><div class="stat-icon green"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="stat-value" style="color:var(--green)">${completed}</div><div class="stat-label">Training completed</div><div class="stat-delta">${pct}% completion rate</div></div></div>
+    <div class="stat-card"><div class="stat-icon blue"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="stat-value" style="color:var(--blue-mid)">${inprog}</div><div class="stat-label">In progress</div><div class="stat-delta" style="color:var(--blue-mid)">${total?Math.round(inprog/total*100):0}% of enrolled</div></div></div>
+    <div class="stat-card"><div class="stat-icon amber"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="stat-value" style="color:var(--amber)">${female}</div><div class="stat-label">Female beneficiaries</div><div class="stat-delta" style="color:var(--amber)">${total?Math.round(female/total*100):0}% gender share</div></div></div>`;
+  const subs=countBy('SubCounty');const maxS=Math.max(...Object.values(subs),1);
+  document.getElementById('subcounty-bars').innerHTML=Object.entries(subs).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxS*100)}%;background:var(--green)"></div></div><div class="bar-val">${v}</div></div>`).join('')||noData();
+  const sd={'Completed':'#1a7a4a','In progress':'#2471a3','Not started':'#adb5bd','Dropped':'#a93226'};
+  const sc={};benData.forEach(r=>{sc[r.Status]=(sc[r.Status]||0)+1;});
+  drawDonut('donut-canvas',Object.entries(sd).map(([k,c])=>({val:sc[k]||0,color:c})));
+  document.getElementById('donut-legend').innerHTML=Object.entries(sd).map(([k,c])=>`<div class="legend-item"><div class="legend-dot" style="background:${c}"></div>${k}: <strong>${sc[k]||0}</strong></div>`).join('');
+  const plats=countBy('Platform');const maxP=Math.max(...Object.values(plats),1);
+  const pc={'e-Extension':'var(--green)','e-Marketing':'#6b3cbf','Both':'var(--amber)'};
+  document.getElementById('platform-bars').innerHTML=Object.entries(plats).map(([k,v])=>`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/maxP*100)}%;background:${pc[k]||'var(--green)'}"></div></div><div class="bar-val">${v}</div></div>`).join('')||noData();
+  document.getElementById('recent-list').innerHTML=benData.slice(-5).reverse().map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--gray-100)"><div style="width:32px;height:32px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);flex-shrink:0">${(r.Name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.Name}</div><div style="font-size:11px;color:var(--gray-500)">${r.SubCounty} · ${r.Trainer}</div></div>${sBadge(r.Status)}</div>`).join('')||noData();
+}
+
+function drawDonut(id,data){
+  const c=document.getElementById(id);if(!c)return;
+  const ctx=c.getContext('2d');const total=data.reduce((a,d)=>a+Number(d.val),0);
+  ctx.clearRect(0,0,150,150);
+  if(!total){ctx.fillStyle='#e9ecef';ctx.beginPath();ctx.arc(75,75,60,0,Math.PI*2);ctx.fill();}
+  else{let s=-Math.PI/2;data.forEach(d=>{if(!Number(d.val))return;const a=(Number(d.val)/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(75,75);ctx.arc(75,75,65,s,s+a);ctx.fillStyle=d.color;ctx.fill();s+=a;});}
+  ctx.beginPath();ctx.arc(75,75,40,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#343a40';ctx.font='bold 18px DM Sans,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(total,75,71);
+  ctx.font='10px DM Sans,sans-serif';ctx.fillStyle='#6c757d';ctx.fillText('total',75,87);
+}
+
+/* ═══════════════════════════════════ BENEFICIARIES ═══════════════════════════════════ */
+function sBadge(s){const m={'Completed':'badge-completed','In progress':'badge-progress','Not started':'badge-notstarted','Dropped':'badge-dropped'};return`<span class="badge ${m[s]||'badge-notstarted'}">${s||'Not started'}</span>`;}
+function pBadge(p){if(p==='e-Extension')return`<span class="badge badge-ext">e-Ext</span>`;if(p==='e-Marketing')return`<span class="badge badge-mkt">e-Mkt</span>`;return`<span class="badge badge-both">Both</span>`;}
+function pBar(r){const mods=modsFor(r.Platform||'');const done=parseInt(r.ModulesDone)||0;const total=mods.length;const pct=total?Math.round(done/total*100):0;return`<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill ${pct<100?'partial':''}" style="width:${pct}%"></div></div><div class="prog-pct">${pct}%</div></div>`;}
+function noData(){return'<p style="font-size:13px;color:var(--gray-400);padding:8px 0">No data yet.</p>';}
+function countBy(f){const o={};benData.forEach(r=>{if(r[f])o[r[f]]=(o[r[f]]||0)+1;});return o;}
+
+function populateBenFilters(){
+  const subs=[...new Set(benData.map(r=>r.SubCounty).filter(Boolean))].sort();
+  document.getElementById('bf-subcounty').innerHTML='<option value="">All sub-counties</option>'+subs.map(s=>`<option>${s}</option>`).join('');
+}
+function renderBenTable(){
+  const q=(document.getElementById('ben-search').value||'').toLowerCase();
+  const pf=document.getElementById('bf-platform').value;
+  const sf=document.getElementById('bf-status').value;
+  const scf=document.getElementById('bf-subcounty').value;
+  const f=benData.filter(r=>{
+    const m=!q||(r.Name+r.Phone+r.FarmerID+r.SubCounty).toLowerCase().includes(q);
+    return m&&(!pf||r.Platform===pf)&&(!sf||r.Status===sf)&&(!scf||r.SubCounty===scf);
+  });
+  document.getElementById('ben-tbody').innerHTML=f.length?f.map(r=>`<tr>
+    <td><div class="td-name">${r.Name}</div><div class="td-sub">${r.FarmerID} · ${r.Phone}</div></td>
+    <td><div class="td-name">${r.SubCounty}</div><div class="td-sub">${r.Ward||'—'}</div></td>
+    <td>${pBadge(r.Platform)}</td>
+    <td style="font-size:12px">${r.Cohort||'—'}</td>
+    <td style="font-size:12px">${r.Trainer}</td>
+    <td>${pBar(r)}</td>
+    <td>${sBadge(r.Status)}</td>
+    <td><div class="inline-actions">
+      <button class="icon-btn icon-btn-view" title="View" onclick="viewBen('${r.ID}')">👁</button>
+      <button class="icon-btn icon-btn-edit" title="Update" onclick="openProgModal('${r.ID}')">✏</button>
+      <button class="icon-btn icon-btn-del" title="Delete" onclick="deleteBen('${r.ID}')">🗑</button>
+    </div></td></tr>`).join('')
+    :'<tr><td colspan="8"><div class="empty-state"><p>No beneficiaries found.</p></div></td></tr>';
+  document.getElementById('ben-count').textContent=`Showing ${f.length} of ${benData.length} beneficiaries`;
+}
+
+/* ═══════════════════════════════════ REGISTER ═══════════════════════════════════ */
+function updateModuleList(){
+  const p=document.getElementById('r-platform').value;
+  const mods=p?modsFor(p):[];
+  document.getElementById('module-checklist').innerHTML=mods.map(m=>`<label class="mc"><input type="checkbox" name="rm" value="${m.id}"><span class="mc-name">${m.name}</span><span class="mc-tag ${m.id.startsWith('M')?'badge-mkt':'badge-ext'}">${m.id}</span></label>`).join('');
+}
+function updateTrainerDatalist(){
+  const opts=trainerData.map(t=>`<option value="${t.Name}">`).join('');
+  ['trainer-datalist','trainer-datalist2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+  const tf=document.getElementById('pf-trainer');
+  if(tf){const trainerNames=[...new Set(benData.map(r=>r.Trainer).filter(Boolean))].sort();tf.innerHTML='<option value="">All trainers</option>'+trainerNames.map(t=>`<option>${t}</option>`).join('');}
+}
+async function submitRegister(e){
+  e.preventDefault();
+  const btn=document.getElementById('reg-submit-btn');
+  btn.disabled=true;btn.textContent='Saving to Google Sheets…';
+  const checkedMods=[...document.querySelectorAll('input[name="rm"]:checked')].map(x=>x.value);
+  const payload={
+    name:document.getElementById('r-name').value.trim(),phone:document.getElementById('r-phone').value.trim(),
+    natid:document.getElementById('r-natid').value,gender:document.getElementById('r-gender').value,
+    age:document.getElementById('r-age').value,edu:document.getElementById('r-edu').value,
+    disability:document.getElementById('r-disability').value,county:document.getElementById('r-county').value.trim(),
+    subcounty:document.getElementById('r-subcounty').value.trim(),ward:document.getElementById('r-ward').value,
+    village:document.getElementById('r-village').value,gps:document.getElementById('r-gps').value,
+    group:document.getElementById('r-group').value,enterprise:document.getElementById('r-enterprise').value,
+    farmsize:document.getElementById('r-farmsize').value,smartphone:document.getElementById('r-smartphone').value,
+    internet:document.getElementById('r-internet').value,valuechain:document.getElementById('r-valuechain').value,
+    prevtraining:document.getElementById('r-prevtraining').value,platform:document.getElementById('r-platform').value,
+    cohort:document.getElementById('r-cohort').value.trim(),date:document.getElementById('r-date').value,
+    trainer:document.getElementById('r-trainer').value.trim(),venue:document.getElementById('r-venue').value,
+    skill:document.getElementById('r-skill').value,remarks:document.getElementById('r-remarks').value,
+    modules:checkedMods,registeredBy:settingsData.trainerName||''
+  };
+  const res=await apiPost('addBeneficiary',payload);
+  btn.disabled=false;btn.innerHTML='<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14" height="14"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Register beneficiary';
+  if(res.success){
+    showToast(`${payload.name} registered as ${res.id}`,'success');
+    document.getElementById('reg-form').reset();updateModuleList();
+    await refreshAll();
+    nav('beneficiaries',document.querySelectorAll('.nav-item')[1]);
+  }else{showToast('Error: '+res.error,'error');}
+}
+
+/* ═══════════════════════════════════ PROGRESS ═══════════════════════════════════ */
+function populateProgFilters(){
+  const trainers=[...new Set(benData.map(r=>r.Trainer).filter(Boolean))].sort();
+  const cohorts=[...new Set(benData.map(r=>r.Cohort).filter(Boolean))].sort();
+  const tf=document.getElementById('pf-trainer');if(tf)tf.innerHTML='<option value="">All trainers</option>'+trainers.map(t=>`<option>${t}</option>`).join('');
+  const cf=document.getElementById('pf-cohort');if(cf)cf.innerHTML='<option value="">All cohorts</option>'+cohorts.map(c=>`<option>${c}</option>`).join('');
+}
+function renderProgTable(){
+  const q=(document.getElementById('prog-search').value||'').toLowerCase();
+  const tf=document.getElementById('pf-trainer').value;
+  const cf=document.getElementById('pf-cohort').value;
+  const f=benData.filter(r=>{const m=!q||(r.Name+r.SubCounty).toLowerCase().includes(q);return m&&(!tf||r.Trainer===tf)&&(!cf||r.Cohort===cf);});
+  document.getElementById('prog-tbody').innerHTML=f.map(r=>`<tr>
+    <td><div class="td-name">${r.Name}</div><div class="td-sub">${r.FarmerID} · ${r.SubCounty}</div></td>
+    <td>${pBadge(r.Platform)}</td>
+    <td style="font-size:13px">${r.ModulesDone||0} / ${modsFor(r.Platform||'').length}</td>
+    <td>${pBar(r)}</td>
+    <td>${sBadge(r.Status)}</td>
+    <td style="font-size:12px;color:var(--gray-500)">${r.LastUpdated||'—'}</td>
+    <td><div class="inline-actions">
+      <button class="icon-btn icon-btn-edit" onclick="openProgModal('${r.ID}')">✏</button>
+      <button class="icon-btn icon-btn-view" onclick="viewBen('${r.ID}')">👁</button>
+    </div></td></tr>`).join('')||'<tr><td colspan="7"><div class="empty-state"><p>No records found.</p></div></td></tr>';
+  document.getElementById('prog-count').textContent=`${f.length} of ${benData.length} beneficiaries`;
+}
+
+function openProgModal(id){
+  editingId=id;
+  const r=benData.find(x=>x.ID===id);if(!r)return;
+  document.getElementById('prog-modal-name').textContent=r.Name;
+  document.getElementById('prog-modal-sub').textContent=`${r.FarmerID} · ${r.Platform} · ${r.Cohort}`;
+  const mods=modsFor(r.Platform||'');
+  const doneList=(r.ModulesList||'').split(',').map(x=>x.trim()).filter(Boolean);
+  document.getElementById('prog-modal-modules').innerHTML=`<div class="fg"><label>Modules completed</label><div class="module-grid" style="margin-top:6px">${mods.map(m=>`<label class="mc"><input type="checkbox" name="pm" value="${m.id}" ${doneList.includes(m.id)?'checked':''}><span class="mc-name" style="font-size:12px">${m.name}</span><span class="mc-tag ${m.id.startsWith('M')?'badge-mkt':'badge-ext'}">${m.id}</span></label>`).join('')}</div></div>`;
+  document.getElementById('pm-status').value=r.Status||'Not started';
+  document.getElementById('pm-score').value=r.AssessmentScore||'';
+  document.getElementById('pm-notes').value=r.TrainerNotes||'';
+  openModal('modal-progress');
+}
+async function saveProgress(){
+  const btn=document.getElementById('prog-save-btn');btn.disabled=true;btn.textContent='Saving…';
+  const r=benData.find(x=>x.ID===editingId);
+  const modules=[...document.querySelectorAll('input[name="pm"]:checked')].map(x=>x.value);
+  const res=await apiPost('updateProgress',{id:editingId,platform:r.Platform,modules,status:document.getElementById('pm-status').value,score:document.getElementById('pm-score').value,notes:document.getElementById('pm-notes').value});
+  btn.disabled=false;btn.textContent='Save to Google Sheets';
+  if(res.success){closeModal('modal-progress');await refreshAll();renderProgTable();renderBenTable();showToast('Progress updated and saved to Google Sheets','success');}
+  else showToast('Error: '+res.error,'error');
+}
+
+function viewBen(id){
+  const r=benData.find(x=>x.ID===id);if(!r)return;
+  document.getElementById('view-title').textContent=r.Name;
+  const mods=modsFor(r.Platform||'');const done=parseInt(r.ModulesDone)||0;const pct=mods.length?Math.round(done/mods.length*100):0;
+  const doneList=(r.ModulesList||'').split(',').map(x=>x.trim()).filter(Boolean);
+  document.getElementById('view-body').innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <div style="width:50px;height:50px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--green);flex-shrink:0">${(r.Name||'').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()}</div>
+      <div><div style="font-size:17px;font-weight:700">${r.Name}</div><div style="font-size:12px;color:var(--gray-500)">${r.FarmerID} · ${r.Phone} · ${r.County}</div><div style="margin-top:5px;display:flex;gap:6px">${sBadge(r.Status)} ${pBadge(r.Platform)}</div></div>
+    </div>
+    <div style="margin-bottom:14px"><div style="font-size:12px;color:var(--gray-500);margin-bottom:4px">Training progress — ${done}/${mods.length} modules (${pct}%)</div><div style="height:7px;background:var(--gray-200);border-radius:4px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--green);border-radius:4px"></div></div></div>
+    <div style="border:1px solid var(--gray-200);border-radius:var(--radius);overflow:hidden;margin-bottom:14px">
+    <div class="profile-detail-grid">${[['Sub-county',r.SubCounty],['Ward',r.Ward||'—'],['Village',r.Village||'—'],['Gender',r.Gender||'—'],['Age',r.AgeGroup||'—'],['Education',r.Education||'—'],['Enterprise',r.Enterprise||'—'],['Farm size',r.FarmSize?(r.FarmSize+' acres'):'—'],['Smartphone',r.Smartphone||'—'],['Internet',r.Internet||'—'],['Trainer',r.Trainer],['Cohort',r.Cohort]].map(([l,v])=>`<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-val">${v}</div></div>`).join('')}</div></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:7px">Modules</div>
+    <div class="module-grid">${mods.map(m=>`<div class="mc" style="cursor:default;${doneList.includes(m.id)?'border-color:var(--green);background:var(--green-light)':''}"><span style="font-size:14px">${doneList.includes(m.id)?'✅':'⬜'}</span><span class="mc-name" style="font-size:12px">${m.name}</span></div>`).join('')}</div>
+    ${r.AssessmentScore?`<div style="margin-top:12px"><span class="badge badge-completed">Score: ${r.AssessmentScore}%</span></div>`:''}
+    ${r.TrainerNotes?`<div style="margin-top:9px;padding:9px 11px;background:var(--gray-50);border-radius:var(--radius-sm);font-size:13px"><strong>Notes:</strong> ${r.TrainerNotes}</div>`:''}
+    ${r.Remarks?`<div style="margin-top:7px;padding:9px 11px;background:var(--amber-light);border-radius:var(--radius-sm);font-size:13px"><strong>Remarks:</strong> ${r.Remarks}</div>`:''}`;
+  openModal('modal-view');
+}
+
+async function deleteBen(id){
+  if(!confirm('Delete this beneficiary? This cannot be undone.'))return;
+  const res=await apiPost('deleteBeneficiary',{id});
+  if(res.success){await refreshAll();renderBenTable();showToast('Record deleted','success');}
+  else showToast('Error: '+res.error,'error');
+}
+
+/* ═══════════════════════════════════ SESSIONS ═══════════════════════════════════ */
+function renderSessions(){
+  document.getElementById('sessions-tbody').innerHTML=sessionData.length
+    ?sessionData.map(s=>`<tr><td>${s.Date}</td><td>${s.Venue||'—'}</td><td>${s.Trainer}</td><td>${pBadge(s.Platform)}</td><td>${s.Attendees||'—'}</td><td style="font-size:12px">${s.SubCounty||'—'}</td><td style="font-size:12px">${s.Cohort||'—'}</td><td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.Notes||''}">${s.Notes||'—'}</td></tr>`).join('')
+    :'<tr><td colspan="8"><div class="empty-state"><p>No sessions logged yet.</p></div></td></tr>';
+}
+async function saveSession(){
+  const date=document.getElementById('ss-date').value,trainer=document.getElementById('ss-trainer').value.trim();
+  if(!date||!trainer){showToast('Date and trainer are required.','error');return;}
+  const res=await apiPost('addSession',{date,venue:document.getElementById('ss-venue').value,trainer,platform:document.getElementById('ss-platform').value,subcounty:document.getElementById('ss-subcounty').value,cohort:document.getElementById('ss-cohort').value,attendees:document.getElementById('ss-attendees').value,notes:document.getElementById('ss-notes').value});
+  if(res.success){closeModal('modal-session');await refreshAll();renderSessions();showToast('Session logged','success');}
+  else showToast('Error: '+res.error,'error');
+}
+
+/* ═══════════════════════════════════ REPORTS ═══════════════════════════════════ */
+function renderReports(){
+  const total=benData.length,completed=benData.filter(r=>r.Status==='Completed').length,female=benData.filter(r=>r.Gender==='Female').length;
+  document.getElementById('report-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-label">Total enrolled</div></div>
+    <div class="kpi"><div class="kpi-val">${total?Math.round(completed/total*100):0}%</div><div class="kpi-label">Completion rate</div></div>
+    <div class="kpi"><div class="kpi-val">${total?Math.round(female/total*100):0}%</div><div class="kpi-label">Female share</div></div>
+    <div class="kpi"><div class="kpi-val">${sessionData.length}</div><div class="kpi-label">Sessions held</div></div>`;
+  makeBarChart('gender-bars',countBy('Gender'),{'Female':'#d4537e','Male':'#185FA5'});
+  makeBarChart('age-bars',countBy('AgeGroup'),null,'#7F77DD');
+  makeBarChart('enterprise-bars',countBy('Enterprise'),null,'#1D9E75');
+  makeBarChart('trainer-perf-bars',countBy('Trainer'),null,'#EF9F27');
+  document.getElementById('report-tbody').innerHTML=benData.map(r=>`<tr><td><span class="tag">${r.FarmerID}</span></td><td class="td-name">${r.Name}</td><td style="font-size:12px">${r.SubCounty}</td><td>${pBadge(r.Platform)}</td><td>${sBadge(r.Status)}</td><td>${pBar(r)}</td><td style="font-size:12px">${r.Trainer}</td><td style="font-size:12px">${r.TrainingDate}</td></tr>`).join('');
+}
+function makeBarChart(elId,counts,colors,fallback){
+  const max=Math.max(...Object.values(counts),1);
+  document.getElementById(elId).innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%;background:${colors?colors[k]||fallback||'var(--green)':fallback||'var(--green)'}"></div></div><div class="bar-val">${v}</div></div>`).join('')||noData();
+}
+
+/* ═══════════════════════════════════ MODULES PAGE ═══════════════════════════════════ */
+function renderModules(){
+  const row=m=>`<div style="display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-bottom:1px solid var(--gray-100)"><div style="width:26px;height:26px;border-radius:6px;background:${m.id.startsWith('M')?'#ede8fe':'var(--green-light)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${m.id.startsWith('M')?'#4a2b8a':'var(--green)'};flex-shrink:0">${m.id}</div><div><div style="font-size:13.5px;font-weight:500">${m.name}</div><div style="font-size:11.5px;color:var(--gray-500);margin-top:2px">Duration: ${m.dur}</div></div></div>`;
+  document.getElementById('ext-mod-list').innerHTML=MODULES_EXT.map(row).join('');
+  document.getElementById('mkt-mod-list').innerHTML=MODULES_MKT.map(row).join('');
+}
+
+/* ═══════════════════════════════════ TRAINERS ═══════════════════════════════════ */
+function renderTrainers(){
+  document.getElementById('trainers-tbody').innerHTML=trainerData.length?trainerData.map(t=>{
+    const my=benData.filter(r=>r.Trainer===t.Name);const comp=my.filter(r=>r.Status==='Completed').length;const rate=my.length?Math.round(comp/my.length*100):0;
+    return`<tr><td><div class="td-name">${t.Name}</div><div class="td-sub">${t.Email||'—'}</div></td><td style="font-size:13px">${t.County}</td><td style="font-size:13px">${t.SubCounty}</td><td style="font-size:13px">${t.Phone||'—'}</td><td style="font-size:13px">${my.length}</td><td><div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${rate}%"></div></div><div class="prog-pct">${rate}%</div></div></td><td><button class="icon-btn icon-btn-del" onclick="deleteTrainer('${t.ID}')">🗑</button></td></tr>`;
+  }).join(''):'<tr><td colspan="7"><div class="empty-state"><p>No trainers yet.</p></div></td></tr>';
+}
+async function saveTrainer(){
+  const name=document.getElementById('tt-name').value.trim();if(!name){showToast('Name required.','error');return;}
+  const res=await apiPost('addTrainer',{name,phone:document.getElementById('tt-phone').value,county:document.getElementById('tt-county').value,subcounty:document.getElementById('tt-subcounty').value,spec:document.getElementById('tt-spec').value,email:document.getElementById('tt-email').value});
+  if(res.success){closeModal('modal-trainer');await refreshAll();renderTrainers();showToast(name+' added as trainer','success');}
+  else showToast('Error: '+res.error,'error');
+}
+async function deleteTrainer(id){
+  if(!confirm('Remove this trainer?'))return;
+  const res=await apiPost('deleteTrainer',{id});
+  if(res.success){await refreshAll();renderTrainers();showToast('Trainer removed','success');}
+  else showToast('Error: '+res.error,'error');
+}
+
+/* ═══════════════════════════════════ SETTINGS ═══════════════════════════════════ */
+function loadSettingsForm(){
+  document.getElementById('s-county').value=settingsData.county||'';
+  document.getElementById('s-programme').value=settingsData.programme||'';
+  document.getElementById('s-cycle').value=settingsData.cycle||'Monthly';
+  document.getElementById('s-trainer-name').value=settingsData.trainerName||'';
+  const url=API_URL||localStorage.getItem('mifugohubtrack_api_url')||'';
+  document.getElementById('api-url-display').textContent=url?url.slice(0,60)+'…':'Not connected';
+}
+async function saveSettings(){
+  const s={county:document.getElementById('s-county').value,programme:document.getElementById('s-programme').value,cycle:document.getElementById('s-cycle').value,trainerName:document.getElementById('s-trainer-name').value};
+  const res=await apiPost('saveSettings',s);
+  if(res.success){settingsData=s;if(s.county)document.getElementById('county-label').textContent=s.county+' County';if(s.trainerName)document.getElementById('sidebar-trainer').textContent=s.trainerName;showToast('Settings saved to Google Sheets','success');}
+  else showToast('Error: '+res.error,'error');
+}
+
+/* ═══════════════════════════════════ EXPORT ═══════════════════════════════════ */
+function exportCSV(){
+  const headers=['ID','FarmerID','Name','Phone','NationalID','Gender','AgeGroup','Education','Disability','County','SubCounty','Ward','Village','GPS','FarmerGroup','Enterprise','FarmSize','Smartphone','Internet','ValueChain','PrevTraining','Platform','Cohort','TrainingDate','Trainer','Venue','SkillLevel','ModulesDone','TotalModules','ProgressPct','Status','AssessmentScore','TrainerNotes','Remarks','LastUpdated'];
+  const rows=benData.map(r=>headers.map(h=>`"${(r[h]||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv=[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='mifugohubtrack_export_'+(new Date().toISOString().slice(0,10))+'.csv';a.click();
+  showToast('CSV exported','success');
+}
+
+function globalSearch(q){
+  const active=document.querySelector('.page.active');if(!active)return;
+  if(active.id==='page-beneficiaries'){document.getElementById('ben-search').value=q;renderBenTable();}
+  else if(active.id==='page-progress'){document.getElementById('prog-search').value=q;renderProgTable();}
+}
+
+/* ═══════════════════════════════════ MODALS ═══════════════════════════════════ */
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});});
+
+/* ═══════════════════════════════════ TOAST ═══════════════════════════════════ */
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+(type||'');
+  setTimeout(()=>t.classList.add('show'),10);setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+/* ═══════════════════════════════════ INIT ═══════════════════════════════════ */
+const savedUrl=localStorage.getItem('mifugohubtrack_api_url');
+if(savedUrl){
+  API_URL=savedUrl;
+  document.getElementById('setup-screen').style.display='none';
+  document.getElementById('api-url-display').textContent=savedUrl.slice(0,60)+'…';
+  refreshAll();
+}
+if(window.innerWidth<=900)document.getElementById('hamburger').style.display='block';
+window.addEventListener('resize',()=>{document.getElementById('hamburger').style.display=window.innerWidth<=900?'block':'none';if(window.innerWidth>900)document.getElementById('sidebar').classList.remove('open');});
+renderModules();
+</script>
+</body>
+</html>
